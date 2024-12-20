@@ -29,7 +29,7 @@ class MongoConfig:
                 raise ValueError("Database name must be provided.")
 
             self.__host = host if host else '0.0.0.0'
-            self.__port = port if port else 27017
+            self.__port = int(port) if port else 27017
 
             try:
                 self.__client = pymongo.MongoClient(
