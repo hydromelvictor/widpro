@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-logging module
+Logging module to manage loggers for applications.
 """
 import logging
 import os
@@ -8,80 +8,112 @@ import os
 
 class Logger:
     """
-    logging class
+    A class for managing logging configurations with both
+    file and console output.
     """
 
     def __init__(self, name: str, level: int = logging.INFO):
         """
-        init
+        Initialize the Logger with a name and logging level.
+
+        :param name: The name of the logger, used to identify logs.
+        :param level: The logging level (default is INFO).
+        :raises ValueError: If name is not a string or level is not an integer.
         """
-        assert type(name) is str, 'name must be str'
+        if not isinstance(name, str):
+            raise ValueError('name must be str')
         self.name = name
 
-        assert type(level) is int, 'level must be int'
+        if not isinstance(level, int):
+            raise ValueError('level must be int')
         self.level = level
 
         self.logger = logging.getLogger(self.name)
-        self.logger.setLevel(self.level)
+        if not self.logger.handlers:
+            self.logger.setLevel(self.level)
 
-        self.formatter = logging.Formatter(
-            "%(asctime)s :: %(name)s :: %(levelname)s :: file %(filename)s\
-                :: %(funcName)s :: line %(lineno)d :: %(message)s"
-        )
+            self.formatter = logging.Formatter(
+                "%(asctime)s :: %(name)s :: %(levelname)s ::\
+                    file %(filename)s :: %(funcName)s ::\
+                        line %(lineno)d :: %(message)s"
+            )
 
-        # file handler
+            log_dir = os.environ.get('LOG_DIR', os.getcwd())
+            log_file_path = os.path.join(log_dir, f'{self.name}.log')
 
-        log_file_path = os.path.join(os.getcwd(), '{}.log'.format(self.name))
+            self.file_handler = logging.FileHandler(log_file_path, mode='a')
+            self.file_handler.setLevel(self.level)
+            self.file_handler.setFormatter(self.formatter)
+            self.logger.addHandler(self.file_handler)
 
-        self.file_handler = logging.FileHandler(log_file_path, mode='a')
-        self.file_handler.setLevel(self.level)
-        self.file_handler.setFormatter(self.formatter)
+            self.stream_handler = logging.StreamHandler()
+            self.stream_handler.setLevel(self.level)
+            self.stream_handler.setFormatter(self.formatter)
+            self.logger.addHandler(self.stream_handler)
 
-        self.logger.addHandler(self.file_handler)
-
-        # stream handler
-        self.stream_handler = logging.StreamHandler()
-        self.stream_handler.setLevel(self.level)
-        self.stream_handler.setFormatter(self.formatter)
-
-        self.logger.addHandler(self.stream_handler)
-
-    def info(self, message: str):
+    def log_info(self, message: str):
         """
-        info
+        Log an info message.
+
+        :param message: The message to log.
+        :raises ValueError: If message is not a string.
         """
-        assert type(message) is str, 'message must be str'
+        if not isinstance(message, str):
+            raise ValueError('message must be str')
         self.logger.info(message)
 
-    def debug(self, message: str):
+    def log_debug(self, message: str):
         """
-        debug
+        Log a debug message.
+
+        :param message: The message to log.
+        :raises ValueError: If message is not a string.
         """
-        assert type(message) is str, 'message must be str'
+        if not isinstance(message, str):
+            raise ValueError('message must be str')
         self.logger.debug(message)
 
-    def warning(self, message: str):
+    def log_warning(self, message: str):
         """
-        warning
+        Log a warning message.
+
+        :param message: The message to log.
+        :raises ValueError: If message is not a string.
         """
-        assert type(message) is str, 'message must be str'
+        if not isinstance(message, str):
+            raise ValueError('message must be str')
         self.logger.warning(message)
 
-    def error(self, message: str):
+    def log_error(self, message: str):
         """
-        error
+        Log an error message.
+
+        :param message: The message to log.
+        :raises ValueError: If message is not a string.
         """
-        assert type(message) is str, 'message must be str'
+        if not isinstance(message, str):
+            raise ValueError('message must be str')
         self.logger.error(message)
 
-    def critical(self, message: str):
+    def log_critical(self, message: str):
         """
-        critical
+        Log a critical message.
+
+        :param message: The message to log.
+        :raises ValueError: If message is not a string.
         """
-        assert type(message) is str, 'message must be str'
+        if not isinstance(message, str):
+            raise ValueError('message must be str')
         self.logger.critical(message)
 
     def close(self):
-        """Close file and stream handlers"""
-        for handler in self.logger.handlers:
+        """Close all handlers associated with this logger."""
+        for handler in self.logger.handlers[:]:
             handler.close()
+            self.logger.removeHandler(handler)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()

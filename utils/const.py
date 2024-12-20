@@ -1,4 +1,4 @@
-import path
+from os import path
 
 
 BASEDIR = path.dirname(path.abspath(__file__))

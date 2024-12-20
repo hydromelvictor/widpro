@@ -1,5 +1,6 @@
 from .base import Base
 from decimal import Decimal
+import typing
 
 
 class Product(Base):
@@ -11,35 +12,54 @@ class Product(Base):
 
     """
 
-    def fieldsChecker(self, **kwargs) -> bool:
+    def fieldsChecker(self, **kwargs: dict[str, typing.Any]) -> bool:
+        """
+        Validates the fields provided in kwargs for creating or
+        updating an entity.
 
-        assert kwargs.get('author', False), 'author is required'
-        assert kwargs.get('name', False), 'name is required'
-        assert kwargs.get(
-            'description', 'No description'), 'description is required'
-        assert kwargs.get(
-            'price', False
-            ) and type(kwargs.get('price')) == Decimal, 'price is required'
-        assert kwargs.get(
-            'stock', 1
-            ) and type(kwargs.get('stock')) == int, 'stock is required'
-        assert kwargs.get('category', False), 'category is required'
-        assert kwargs.get('image', False), 'image is required'
-        assert kwargs.get('status', 'available'), 'status is required'
+        :raises ValueError: If any required field is missing or has
+        incorrect type.
+        :return: True if all validations pass.
+        """
+        if not kwargs.get('author'):
+            raise ValueError("Field 'author' is required")
 
-        return all(
-            [
-                kwargs.get('author', False),
-                kwargs.get('name', False),
-                kwargs.get('description', 'No description'),
-                kwargs.get('price', False),
-                kwargs.get('stock', 1),
-                kwargs.get('category', False),
-                kwargs.get('image', False),
-                kwargs.get('status', 'available'),
-                kwargs.get('type', False)
-            ]
-        )
+        if not kwargs.get('name'):
+            raise ValueError("Field 'name' is required")
+
+        assert isinstance(kwargs.get('name'), str), \
+            "Field 'name' must be a string"
+
+        if not kwargs.get('description'):
+            kwargs['description'] = 'No description'
+
+        price = kwargs.get('price')
+        if price is None or not isinstance(price, Decimal):
+            raise ValueError("Field 'price' must be of type Decimal")
+
+        stock = kwargs.get('stock', 1)
+        if not isinstance(stock, int):
+            try:
+                stock = int(stock)
+            except ValueError:
+                raise ValueError("Field 'stock' must be an integer")
+
+        if not kwargs.get('category'):
+            raise ValueError("Field 'category' is required")
+
+        from .category import Category
+        if not Category.get(id=kwargs.get('category')):
+            raise ValueError("Category does not exist")
+
+        if not kwargs.get('image'):
+            raise ValueError("Field 'image' is required")
+
+        if not kwargs.get('status'):
+            kwargs['status'] = 'available'
+
+        # If we reach here without raising an exception,
+        # all validations have passed
+        return True
 
 
 Product = Product()

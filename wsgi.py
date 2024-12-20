@@ -1,8 +1,7 @@
-from .apis import app as launch
-
-
-app = launch()
+from .apis import app
 
 
 if __name__ == '__main__':
     app.run()
+
+# flask  --debug run

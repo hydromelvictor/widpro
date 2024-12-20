@@ -10,26 +10,28 @@ def createCategory():
     if not request.get_json():
         abort(400, 'Invalid JSON')
 
-    if 'name' not in request.get_json():
-        abort(400, 'Name is required')
-
     data = request.get_json()
-    instance = Category.create(**data)
-    return make_response(jsonify(
-        {
-            'store': instance,
-            'msg': 'Category created successfully'
-        }), 201)
+    try:
+        instance = Category.create(**data)
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Category created successfully'
+            }), 201)
+    except Exception as e:
+        abort(500, str(e))
 
 
 @category.route('/<string:key>', methods=['GET'], strict_slashes=False)
 def getCategory(key):
     try:
-        instance = Category.findOne(key)
-        return make_response(jsonify(instance), 200)
-    except ValueError as e:
-        abort(404, str(e))
-
+        instance = Category.get(id=key)
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Category found'
+            }
+            ), 200)
     except Exception as e:
         abort(500, str(e))
 
@@ -37,11 +39,13 @@ def getCategory(key):
 @category.route('/', methods=['GET'], strict_slashes=False)
 def getCategories():
     try:
-        instance = Category.find()
-        return make_response(jsonify(instance), 200)
-    except ValueError as e:
-        abort(404, str(e))
-
+        instance = Category.get()
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Categories found'
+            }
+            ), 200)
     except Exception as e:
         abort(500, str(e))
 
@@ -53,11 +57,13 @@ def updateCategory(key):
 
     data = request.get_json()
     try:
-        instance = Category.update(key, **data)
-        return make_response(jsonify(instance), 200)
-    except ValueError as e:
-        abort(404, str(e))
-
+        instance = Category.update(id=key, **data)
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Category updated successfully'
+            }
+            ), 200)
     except Exception as e:
         abort(500, str(e))
 
@@ -65,18 +71,34 @@ def updateCategory(key):
 @category.route('/<string:key>', methods=['DELETE'], strict_slashes=False)
 def deleteCategory(key):
     try:
-        instance = Category.delete(key)
-        return make_response(jsonify(instance), 200)
-    except ValueError as e:
-        abort(404, str(e))
+        instance = Category.delete(id=key)
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Category deleted successfully'
+            }
+            ), 200)
+    except Exception as e:
+        abort(500, str(e))
 
+
+@category.route('/count', methods=['GET'], strict_slashes=False)
+def countCategory():
+    try:
+        instance = Category.count()
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Categories counted successfully'
+            }
+            ), 200)
     except Exception as e:
         abort(500, str(e))
 
 
 @category.route(
-    '<string:key>/attribute', methods=['POST'], strict_slashes=False)
-def createAttribute(key):
+    '/<string:key>/attributes', methods=['POST'], strict_slashes=False)
+def createAttributes(key):
     if not request.get_json():
         abort(400, 'Invalid JSON')
 
@@ -85,28 +107,49 @@ def createAttribute(key):
 
     data = request.get_json()
     try:
-        instance = Category.createAttribute(key, **data)
-        return make_response(jsonify(instance), 201)
-    except ValueError as e:
-        abort(404, str(e))
-
+        instance = Category.addAttributes(id=key, **data)
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Attribute created successfully'
+            }), 201)
     except Exception as e:
         abort(500, str(e))
 
 
 @category.route(
-    '/<string:key>/attribute/<string:attr>',
-    methods=['PUT'], strict_slashes=False)
-def updateAttribute(key, attr):
+    '/<string:key>/attributes/<string:name>',
+    methods=['PUT'], strict_slashes=False
+    )
+def updateAttributes(key, name):
     if not request.get_json():
         abort(400, 'Invalid JSON')
 
     data = request.get_json()
     try:
-        instance = Category.updateAttribute(key, attr, **data)
-        return make_response(jsonify(instance), 200)
-    except ValueError as e:
-        abort(404, str(e))
+        instance = Category.updateAttributes(id=key, name=name, **data)
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Attribute updated successfully'
+            }
+            ), 200)
+    except Exception as e:
+        abort(500, str(e))
 
+
+@category.route(
+    '/<string:key>/attributes/<string:name>',
+    methods=['DELETE'], strict_slashes=False
+    )
+def deleteAttributes(key, name):
+    try:
+        instance = Category.deleteAttrs(id=key, name=name)
+        return make_response(jsonify(
+            {
+                'store': instance,
+                'msg': 'Attribute deleted successfully'
+            }
+            ), 200)
     except Exception as e:
         abort(500, str(e))
