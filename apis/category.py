@@ -11,6 +11,7 @@ def createCategory():
         abort(400, 'Invalid JSON')
 
     data = request.get_json()
+
     try:
         instance = Category.create(**data)
         return make_response(jsonify(
@@ -72,12 +73,7 @@ def updateCategory(key):
 def deleteCategory(key):
     try:
         instance = Category.delete(id=key)
-        return make_response(jsonify(
-            {
-                'store': instance,
-                'msg': 'Category deleted successfully'
-            }
-            ), 200)
+        return make_response(jsonify(), 204 if instance else 400)
     except Exception as e:
         abort(500, str(e))
 
@@ -145,11 +141,6 @@ def updateAttributes(key, name):
 def deleteAttributes(key, name):
     try:
         instance = Category.deleteAttrs(id=key, name=name)
-        return make_response(jsonify(
-            {
-                'store': instance,
-                'msg': 'Attribute deleted successfully'
-            }
-            ), 200)
+        return make_response(jsonify(), 204 if instance else 400)
     except Exception as e:
         abort(500, str(e))

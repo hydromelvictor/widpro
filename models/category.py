@@ -104,12 +104,14 @@ class Category(Base):
         return True
 
     def create(self, **kwargs) -> str:
-        if self.get(kwargs['name']):
+        if self.get(name=kwargs['name']) is None:
             raise ValueError('Category already exists')
+
+        kwargs['attributes'] = []
         return super().create(**kwargs)
 
     def update(self, id: str, **kwargs) -> bool:
-        res = self.get(id)
+        res = self.get(id=id)
         if not res:
             raise ValueError('Category not found')
         if 'name' in kwargs:
@@ -136,7 +138,7 @@ class Category(Base):
         if not res:
             raise ValueError('Category not found')
 
-        if not self.attributesFieldsChecker([kwargs]):
+        if not self.attributesFieldsChecker(*[kwargs]):
             raise AttributeError('data invalid !!!')
 
         # verifier si l'attribut existe deja avec le meme nom
@@ -152,33 +154,45 @@ class Category(Base):
                     }
                 }
             )
-            return True if res.modified_count > 0 else False
+            return res.modified_count > 0
         except Exception as e:
             raise ValueError(e)
 
     def updateAttributes(self, id: str, name: str, **kwargs) -> bool:
+        # Récupérer le document correspondant
         res = self.get(id)
         if not res:
             raise ValueError('Category not found')
 
-        if not self.attributesFieldsChecker([kwargs]):
-            raise AttributeError('data invalid !!!')
+        # Trouver l'attribut avec le nom donné
+        attribute = next(
+            (attr for attr in res['attributes'] if attr['name'] == name), None)
 
-        if not any(attr['name'] == name for attr in res['attributes']):
-            raise ValueError('Attribute not found')
+        if not attribute:
+            return False
 
+        # Fusionner les nouvelles données avec les anciennes
+        updated_attribute = {**attribute, **kwargs}
+
+        # Vérifier la validité des champs
+        if not self.attributesFieldsChecker(updated_attribute):
+            raise AttributeError('Data invalid!')
+
+        # Construire l'opération de mise à jour MongoDB
         try:
-            res = self.collection.update_one(
-                {'_id': id},
-                {
-                    '$set': {
-                        f'attributes.{name}': kwargs
-                    }
+            update_query = {
+                '$set': {
+                    'attributes.$': updated_attribute
                 }
+            }
+            res = self.collection.update_one(
+                # Critère de recherche
+                {'_id': id, 'attributes.name': name},
+                update_query
             )
-            return True if res.modified_count > 0 else False
+            return res.modified_count > 0
         except Exception as e:
-            raise ValueError(e)
+            raise ValueError(f"Error updating attributes: {e}")
 
     def deleteAttrs(self, id: str, name: str) -> bool:
         res = self.get(id)
@@ -199,7 +213,7 @@ class Category(Base):
                     }
                 }
             )
-            return True if res.modified_count > 0 else False
+            return res.modified_count > 0
         except Exception as e:
             raise ValueError(e)
 

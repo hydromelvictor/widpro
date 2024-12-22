@@ -25,7 +25,7 @@ class Base(ABC):
 
     def create(self, **kwargs) -> str:
 
-        if not self.fieldsChecker(kwargs):
+        if not self.fieldsChecker(**kwargs):
             raise AttributeError('data invalid !!!')
 
         kwargs['_id'] = str(ObjectId())
@@ -38,14 +38,14 @@ class Base(ABC):
         except Exception as e:
             raise ValueError(e)
 
-    def get(self, id: str = None, **kwargs) -> typing.Dict | typing.List:
+    def get(
+            self,
+            id: str = None, **kwargs) -> typing.Dict | typing.List | None:
 
         try:
             if id:
                 res = self.collection.find_one({'_id': id})
-                if not res:
-                    raise ValueError('data not found')
-                return dict(res)
+                return dict(res) if res else None
             else:
                 page = kwargs.get('page', 1)
                 offset = (page - 1) * kwargs.get('limit', 10)
@@ -89,7 +89,7 @@ class Base(ABC):
                         prevPage=prevPage,
                         nextPage=nextPage
                     )
-                )
+                ) if res else None
         except Exception as e:
             raise ValueError(e)
 
@@ -104,7 +104,7 @@ class Base(ABC):
         if 'updatedAt' in kwargs.keys():
             del kwargs['updatedAt']
 
-        if not self.fieldsChecker(kwargs):
+        if not self.fieldsChecker(**kwargs):
             raise AttributeError('data invalid !!!')
 
         if not self.get(id):

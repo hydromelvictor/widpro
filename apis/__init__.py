@@ -34,24 +34,24 @@ app.register_blueprint(product, url_prefix='/products')
 
 @app.errorhandler(404)
 def not_found(err):
-    return make_response(jsonify({'error': err}), 404)
+    return make_response(jsonify({'error': str(err)}), 404)
 
 
 @app.errorhandler(400)
 def bad_request(err):
-    return make_response(jsonify({'error': err}), 400)
+    return make_response(jsonify({'error': str(err)}), 400)
 
 
 @app.errorhandler(401)
 def unauthorized(err):
-    return make_response(jsonify({'error': err}), 401)
+    return make_response(jsonify({'error': str(err)}), 401)
 
 
 @app.errorhandler(403)
 def forbidden(err):
-    return make_response(jsonify({'error': err}), 403)
+    return make_response(jsonify({'error': str(err)}), 403)
 
 
 @app.errorhandler(Exception)
 def internal_server_error(err):
-    return make_response(jsonify({'error': err}), 500)
+    return make_response(jsonify({'error': str(err)}), 500)
