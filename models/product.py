@@ -61,5 +61,13 @@ class Product(Base):
         # all validations have passed
         return True
 
+    def update(self, id, **kwargs):
+        res = self.get(id)
+        if not res:
+            raise ValueError('Product not found')
+
+        update_attrs = {**res, **kwargs}
+        return super().update(id, **update_attrs)
+
 
 Product = Product()
