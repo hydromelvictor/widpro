@@ -4,13 +4,8 @@ from flask import (
     request,
     jsonify,
     make_response,
-    abort,
-    send_from_directory
+    abort
 )
-from werkzeug.utils import secure_filename
-from ..utils.utils import allowed_file
-from ..utils.const import ALLOWED_EXTENSIONS, UPLOAD_FOLDER
-
 
 product = Blueprint('product', __name__)
 
@@ -21,17 +16,6 @@ def createProduct():
         abort(400, 'Invalid JSON')
 
     data = request.get_json()
-    if 'image' in request.files:
-        abort(400, 'Image is required')
-
-    image = request.files['image']
-    if image.filename == '':
-        abort(400, 'Image is required')
-
-    if image and allowed_file(image.filename, ALLOWED_EXTENSIONS):
-        filename = secure_filename(image.filename)
-        image.save(f'{UPLOAD_FOLDER}/{filename}')
-        data['image'] = send_from_directory(UPLOAD_FOLDER, filename)
 
     try:
         instance = Product.create(**data)
