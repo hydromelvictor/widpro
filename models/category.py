@@ -41,10 +41,6 @@ class Category(Base):
             if not isinstance(attr['required'], bool):
                 raise ValueError('Required must be a boolean')
 
-            if attr['required'] and 'default' not in attr:
-                raise ValueError(
-                    'value is required for required attributes')
-
             if 'default' in attr:
                 if attr['type'] == 'string' and\
                         not isinstance(attr['default'], str):
