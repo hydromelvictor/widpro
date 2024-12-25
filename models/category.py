@@ -24,7 +24,7 @@ class Category(Base):
                     'Attributes must be a list of dictionaries'
                 )
 
-            if 'name' not in attr:
+            if 'name' not in attr or len(attr['name']) == 0:
                 raise ValueError('Name is required for each attribute')
 
             if 'type' not in attr:
@@ -107,14 +107,10 @@ class Category(Base):
         return super().create(**kwargs)
 
     def update(self, id: str, **kwargs) -> bool:
-        res = self.get(id=id)
-        if not res:
-            raise ValueError('Category not found')
         if 'name' in kwargs:
             if self.get(kwargs['name']):
                 raise ValueError('Category already exists')
 
-        kwargs |= {k: v for k, v in res.items() if k not in kwargs.keys()}
         return super().update(id, **kwargs)
 
     def delete(self, id, **kwargs):

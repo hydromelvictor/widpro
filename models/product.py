@@ -99,6 +99,9 @@ class Product(Base):
                 key = attr['name']
                 value = kwargs.get(key)
 
+                if not value and attr['default']:
+                    value = attr['default']
+
                 if attr['required'] and not value:
                     raise ValueError('value required')
 
@@ -132,14 +135,6 @@ class Product(Base):
                 raise AttributeError(f'{attr['name']} required')
 
         return True
-
-    def update(self, id, **kwargs):
-        res = self.get(id)
-        if not res:
-            raise ValueError('Product not found')
-
-        update_attrs = {**res, **kwargs}
-        return super().update(id, **update_attrs)
 
 
 Product = Product()

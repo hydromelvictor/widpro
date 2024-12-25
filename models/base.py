@@ -7,6 +7,8 @@ import typing
 from ..mongo import MongoConfig
 from abc import ABC, abstractmethod
 
+from ..utils.utils import merge_complex
+
 
 class Base(ABC):
     @abstractmethod
@@ -94,17 +96,22 @@ class Base(ABC):
             raise ValueError(e)
 
     def update(self, id: str, **kwargs) -> bool:
+        res = self.get(id)
+        if not res:
+            raise ValueError('Product not found')
 
-        if '_id' in kwargs.keys():
-            del kwargs['_id']
+        updated = merge_complex(res, kwargs)
 
-        if 'createdAt' in kwargs.keys():
-            del kwargs['createdAt']
+        if '_id' in updated.keys():
+            del updated['_id']
 
-        if 'updatedAt' in kwargs.keys():
-            del kwargs['updatedAt']
+        if 'createdAt' in updated.keys():
+            del updated['createdAt']
 
-        if not self.fieldsChecker(**kwargs):
+        if 'updatedAt' in updated.keys():
+            del updated['updatedAt']
+
+        if not self.fieldsChecker(**updated):
             raise AttributeError('data invalid !!!')
 
         if not self.get(id):
@@ -114,7 +121,7 @@ class Base(ABC):
             res = self.collection.update_one(
                 {'_id': id},
                 {
-                    '$set': kwargs,
+                    '$set': updated,
                     '$currentDate': {'updatedAt': True}
                 }
             )

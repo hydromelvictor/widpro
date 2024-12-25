@@ -78,12 +78,7 @@ def updateProduct(key):
 def deleteProduct(key):
     try:
         instance = Product.delete(id=key)
-        return make_response(jsonify(
-            {
-                'store': instance,
-                'msg': 'Product deleted successfully'
-            }
-            ), 200)
+        return make_response(jsonify(), 204 if instance else 400)
     except Exception as e:
         abort(500, str(e))
 
